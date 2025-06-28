@@ -1,5 +1,3 @@
-#![allow(unused)]
-
 use bevy::{prelude::*, window::PrimaryWindow};
 use rand::{Rng, rng, rngs::ThreadRng};
 // use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
@@ -38,8 +36,10 @@ fn main() {
         )
         // .add_plugins(EguiPlugin { enable_multipass_for_primary_context: true })
         // .add_plugins(WorldInspectorPlugin::new())
+        // .add_systems(Update, handle_image_asset_creation)
         .add_systems(Startup, setup_level)
-        .add_systems(Update, debug_asset)
+        .add_systems(Startup, create_new_window)
+        // .add_systems(Update, debug_asset)
         // .add_systems(Update, update_bird)
         // .add_systems(Update, update_obstacles)
         .run();
@@ -49,9 +49,14 @@ fn main() {
 
 #[derive(Resource)]
 struct GameManager {
+    // since the application would create multiple assets from the pipe image handle
+    // it makes sense to create and store this handle in a general place like a Resource instance
     pub pipe_image: Handle<Image>,
     pub window_dimensions: Vec2,
 }
+
+#[derive(Component)]
+struct Special {}
 
 #[derive(Component)]
 struct Bird {
@@ -69,14 +74,21 @@ fn setup_level(
     asset_server: Res<AssetServer>,
     mut window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
+    // the Handle(s) are simple ids that references assets loaded into the game
     let pipe_image = asset_server.load("pipe.png");
     let bird_image = asset_server.load("bird.png");
 
-    info!("pipe image handle: {:?}", pipe_image);
-    info!("bird image handle: {:?}", bird_image);
-
+    // the assumption is that there is only One PrimaryWindow
+    // this Window component has some attributes about the window in Question
+    // these attributes are important for the structure of the game as we would see later on
     let window = window_query.single_mut().unwrap();
-
+ 
+    commands.insert_resource(GameManager {
+        pipe_image: pipe_image.clone(),
+        window_dimensions: Vec2::new(window.width(), window.height()),
+    });
+    
+    // adding a resource more than once simply replaces the former instance with the new instance
     commands.insert_resource(GameManager {
         pipe_image: pipe_image.clone(),
         window_dimensions: Vec2::new(window.width(), window.height()),
@@ -97,12 +109,27 @@ fn setup_level(
     spawn_obstacles(&mut commands, &mut rand, window.width(), &pipe_image);
 }
 
+fn create_new_window(mut commands: Commands) {
+    commands.spawn((
+        Window { ..Default::default() },
+        Special {}
+    ));
+}
+
 
 fn debug_asset(images: Res<Assets<Image>>) {
     for image in images.iter() {
         info!("Image: {:?}", image);
     }
 }
+
+
+fn handle_image_asset_creation(
+    mut image_asset_event: EventReader<AssetEvent<Image>>,
+) {
+    info!("📦 Image Asset Events {:?}", image_asset_event);
+}
+
 
 fn update_bird(
     mut bird_query: Query<(&mut Bird, &mut Transform)>,

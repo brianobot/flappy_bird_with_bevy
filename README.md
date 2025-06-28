@@ -9,3 +9,12 @@ outlined below
 ```rust
 fn process_image_asset(images: Assets<Image>) {}
 ```
+
+# React to Asset Changes with Asset Events
+If you need to perform specific actions when an asset is created, modified, or removed, you can make a system that reacts to AssetEvent events.
+
+- Example
+
+```rust
+fn handle_image_asset_creation(image_asset_event: EventReader<AssetEvent<Image>>) {}
+```
