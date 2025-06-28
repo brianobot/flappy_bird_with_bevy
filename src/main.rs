@@ -39,6 +39,7 @@ fn main() {
         // .add_plugins(EguiPlugin { enable_multipass_for_primary_context: true })
         // .add_plugins(WorldInspectorPlugin::new())
         .add_systems(Startup, setup_level)
+        .add_systems(Update, debug_asset)
         // .add_systems(Update, update_bird)
         // .add_systems(Update, update_obstacles)
         .run();
@@ -96,6 +97,12 @@ fn setup_level(
     spawn_obstacles(&mut commands, &mut rand, window.width(), &pipe_image);
 }
 
+
+fn debug_asset(images: Res<Assets<Image>>) {
+    for image in images.iter() {
+        info!("Image: {:?}", image);
+    }
+}
 
 fn update_bird(
     mut bird_query: Query<(&mut Bird, &mut Transform)>,
