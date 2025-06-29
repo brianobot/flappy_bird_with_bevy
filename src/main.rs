@@ -1,5 +1,3 @@
-#![allow(unused)]
-
 use bevy::{prelude::*, window::PrimaryWindow};
 use rand::{Rng, rng, rngs::ThreadRng};
 // use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
@@ -39,19 +37,22 @@ fn main() {
         // .add_plugins(EguiPlugin { enable_multipass_for_primary_context: true })
         // .add_plugins(WorldInspectorPlugin::new())
         .add_systems(Startup, setup_level)
-        .add_systems(Update, debug_asset)
-        // .add_systems(Update, update_bird)
+        .add_systems(Update, update_bird)
         // .add_systems(Update, update_obstacles)
         .run();
 }
 
 
-
 #[derive(Resource)]
 struct GameManager {
+    // since the application would create multiple assets from the pipe image handle
+    // it makes sense to create and store this handle in a general place like a Resource instance
     pub pipe_image: Handle<Image>,
     pub window_dimensions: Vec2,
 }
+
+#[derive(Component)]
+struct Special {}
 
 #[derive(Component)]
 struct Bird {
@@ -69,23 +70,36 @@ fn setup_level(
     asset_server: Res<AssetServer>,
     mut window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
+    // the Handle(s) are simple ids that references assets loaded into the game
     let pipe_image = asset_server.load("pipe.png");
     let bird_image = asset_server.load("bird.png");
 
-    info!("pipe image handle: {:?}", pipe_image);
-    info!("bird image handle: {:?}", bird_image);
-
+    // the assumption is that there is only One PrimaryWindow
+    // this Window component has some attributes about the window in Question
+    // these attributes are important for the structure of the game as we would see later on
     let window = window_query.single_mut().unwrap();
-
+ 
+    commands.insert_resource(GameManager {
+        pipe_image: pipe_image.clone(),
+        window_dimensions: Vec2::new(window.width(), window.height()),
+    });
+    
+    // adding a resource more than once simply replaces the former instance with the new instance
     commands.insert_resource(GameManager {
         pipe_image: pipe_image.clone(),
         window_dimensions: Vec2::new(window.width(), window.height()),
     });
 
     // changes the background color
+    // it was not intuitive why the change color process would be through a Resource
+    // But since there is usually one window this makes sense sort of
+    // no it actually does not make sense, this should have been set as some attribute of the
+    // of the window component in my opinion
     commands.insert_resource(ClearColor(Color::srgb(0.5, 0.7, 0.8)));
+
     commands.spawn(Camera2d::default());
     // for the sprite below to be visible on the screen the camera must be spawn above
+    // Cameras in Bevy are mandatory to see anything: they configure the rendering.
 
     commands.spawn((
         Sprite::from_image(bird_image),
@@ -97,12 +111,6 @@ fn setup_level(
     spawn_obstacles(&mut commands, &mut rand, window.width(), &pipe_image);
 }
 
-
-fn debug_asset(images: Res<Assets<Image>>) {
-    for image in images.iter() {
-        info!("Image: {:?}", image);
-    }
-}
 
 fn update_bird(
     mut bird_query: Query<(&mut Bird, &mut Transform)>,
@@ -126,8 +134,8 @@ fn update_bird(
 
 
 fn spawn_obstacles(
-    mut commands: &mut Commands,
-    mut rand: &mut ThreadRng,
+    commands: &mut Commands,
+    rand: &mut ThreadRng,
     window_width: f32,
     pipe_image: &Handle<Image>,
 ) {
@@ -153,7 +161,7 @@ fn spawn_obstacles(
 }
 
 
-fn generate_offset(mut rand: &mut ThreadRng) -> f32 {
+fn generate_offset(rand: &mut ThreadRng) -> f32 {
     rand.random_range(-OBSTACLE_VERTICAL_OFFSET..OBSTACLE_VERTICAL_OFFSET) * PIXEL_RATIO
 }
 
@@ -166,7 +174,7 @@ fn get_centered_pipe_position() -> f32 {
 fn spawn_obstacle(
     translation: Vec3,
     pipe_direction: f32,
-    mut commands: &mut Commands,
+    commands: &mut Commands,
     pipe_image: &Handle<Image>,
 ) {
     commands.spawn((
