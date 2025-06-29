@@ -36,15 +36,11 @@ fn main() {
         )
         // .add_plugins(EguiPlugin { enable_multipass_for_primary_context: true })
         // .add_plugins(WorldInspectorPlugin::new())
-        // .add_systems(Update, handle_image_asset_creation)
         .add_systems(Startup, setup_level)
-        .add_systems(Startup, create_new_window)
-        // .add_systems(Update, debug_asset)
-        // .add_systems(Update, update_bird)
+        .add_systems(Update, update_bird)
         // .add_systems(Update, update_obstacles)
         .run();
 }
-
 
 
 #[derive(Resource)]
@@ -95,9 +91,15 @@ fn setup_level(
     });
 
     // changes the background color
+    // it was not intuitive why the change color process would be through a Resource
+    // But since there is usually one window this makes sense sort of
+    // no it actually does not make sense, this should have been set as some attribute of the
+    // of the window component in my opinion
     commands.insert_resource(ClearColor(Color::srgb(0.5, 0.7, 0.8)));
+
     commands.spawn(Camera2d::default());
     // for the sprite below to be visible on the screen the camera must be spawn above
+    // Cameras in Bevy are mandatory to see anything: they configure the rendering.
 
     commands.spawn((
         Sprite::from_image(bird_image),
@@ -107,27 +109,6 @@ fn setup_level(
 
     let mut rand = rng();
     spawn_obstacles(&mut commands, &mut rand, window.width(), &pipe_image);
-}
-
-fn create_new_window(mut commands: Commands) {
-    commands.spawn((
-        Window { ..Default::default() },
-        Special {}
-    ));
-}
-
-
-fn debug_asset(images: Res<Assets<Image>>) {
-    for image in images.iter() {
-        info!("Image: {:?}", image);
-    }
-}
-
-
-fn handle_image_asset_creation(
-    mut image_asset_event: EventReader<AssetEvent<Image>>,
-) {
-    info!("📦 Image Asset Events {:?}", image_asset_event);
 }
 
 
@@ -153,8 +134,8 @@ fn update_bird(
 
 
 fn spawn_obstacles(
-    mut commands: &mut Commands,
-    mut rand: &mut ThreadRng,
+    commands: &mut Commands,
+    rand: &mut ThreadRng,
     window_width: f32,
     pipe_image: &Handle<Image>,
 ) {
@@ -180,7 +161,7 @@ fn spawn_obstacles(
 }
 
 
-fn generate_offset(mut rand: &mut ThreadRng) -> f32 {
+fn generate_offset(rand: &mut ThreadRng) -> f32 {
     rand.random_range(-OBSTACLE_VERTICAL_OFFSET..OBSTACLE_VERTICAL_OFFSET) * PIXEL_RATIO
 }
 
@@ -193,7 +174,7 @@ fn get_centered_pipe_position() -> f32 {
 fn spawn_obstacle(
     translation: Vec3,
     pipe_direction: f32,
-    mut commands: &mut Commands,
+    commands: &mut Commands,
     pipe_image: &Handle<Image>,
 ) {
     commands.spawn((
