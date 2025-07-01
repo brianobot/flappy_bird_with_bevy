@@ -18,3 +18,23 @@ If you need to perform specific actions when an asset is created, modified, or r
 ```rust
 fn handle_image_asset_creation(image_asset_event: EventReader<AssetEvent<Image>>) {}
 ```
+
+# Transform
+the transform component controls the position, scale and rotation of an entity on the screen
+
+Attributes:
+    - translation: Vec3
+    - rotation: Quat
+    - scale: Vec3
+
+Helper methods
+    Static Functions
+    - from_matrix
+    - from_scale
+    - from_translation
+    - from_rotation
+
+    Struct Methods
+    - with_scale
+    - with_translation
+    - with_rotation
