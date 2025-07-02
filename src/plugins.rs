@@ -1,7 +1,6 @@
-use bevy::prelude::{Plugin, Update, Startup, App};
+use bevy::prelude::{App, Plugin, Startup, Update};
 
 use crate::systems::{setup_level, update_bird, update_obstacles};
-
 
 pub struct FlappyBirdPlugin;
 

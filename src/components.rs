@@ -1,5 +1,4 @@
-use bevy::prelude::{Component, Handle, Image, Vec2, Resource};
-
+use bevy::prelude::{Component, Handle, Image, Resource, Vec2};
 
 #[derive(Resource)]
 pub struct GameManager {
@@ -18,4 +17,3 @@ pub struct Bird {
 pub struct Obstacle {
     pub pipe_direction: f32,
 }
-

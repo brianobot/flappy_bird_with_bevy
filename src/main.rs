@@ -21,7 +21,6 @@ mod utils;
 #[allow(unused)]
 use utils::*;
 
-
 // Entities (Collection of components) Player Entity: [Health, Damage, Male]
 // Components [Individual attributes]
 // Systems [Functions that perform actions on entities and components]
@@ -44,6 +43,3 @@ fn main() {
         .add_plugins(FlappyBirdPlugin)
         .run();
 }
-
-
-

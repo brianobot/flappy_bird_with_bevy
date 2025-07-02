@@ -1,4 +1,3 @@
-
 pub const GRAVITY: f32 = 200.;
 pub const FLAP_FORCE: f32 = 100.;
 pub const PIXEL_RATIO: f32 = 4.0;

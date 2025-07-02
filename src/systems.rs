@@ -1,11 +1,10 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
+use crate::components::{Bird, GameManager, Obstacle};
 use crate::constants;
-use crate::{rng, ThreadRng};
-use crate::components::{GameManager, Obstacle, Bird};
-use crate::{get_centered_pipe_position, generate_offset};
-
+use crate::{ThreadRng, rng};
+use crate::{generate_offset, get_centered_pipe_position};
 
 pub fn setup_level(
     mut commands: Commands,
@@ -88,11 +87,19 @@ pub fn update_bird(
 
         transform.rotation = Quat::from_axis_angle(
             Vec3::Z,
-            f32::clamp(bird.velocity as f32 / constants::VELOCITY_TO_ROTATION, -90., 90.).to_radians(),
+            f32::clamp(
+                bird.velocity as f32 / constants::VELOCITY_TO_ROTATION,
+                -90.,
+                90.,
+            )
+            .to_radians(),
         );
 
         let mut dead = false;
-        let (screen_top, screen_bottom) = (game_manager.window_dimensions.y / 2., -game_manager.window_dimensions.y / 2.);
+        let (screen_top, screen_bottom) = (
+            game_manager.window_dimensions.y / 2.,
+            -game_manager.window_dimensions.y / 2.,
+        );
         if transform.translation.y <= screen_bottom || transform.translation.y >= screen_top {
             dead = true
         } else {
@@ -134,7 +141,8 @@ pub fn spawn_obstacles(
 ) {
     for i in 0..constants::OBSTACLE_AMOUNT {
         let y_offset = generate_offset(rand);
-        let x_pos = window_width / 2.0 * constants::OBSTACLE_SPACING * constants::PIXEL_RATIO * i as f32;
+        let x_pos =
+            window_width / 2.0 * constants::OBSTACLE_SPACING * constants::PIXEL_RATIO * i as f32;
 
         spawn_obstacle(
             Vec3::X * x_pos + Vec3::Y * (get_centered_pipe_position() + y_offset),
@@ -182,7 +190,9 @@ pub fn update_obstacles(
         if (transform.translation.x + constants::OBSTACLE_WIDTH * constants::PIXEL_RATIO / 2.)
             < -game_manager.window_dimensions.x / 2.
         {
-            transform.translation.x += constants::OBSTACLE_AMOUNT as f32 * constants::OBSTACLE_SPACING * constants::PIXEL_RATIO;
+            transform.translation.x += constants::OBSTACLE_AMOUNT as f32
+                * constants::OBSTACLE_SPACING
+                * constants::PIXEL_RATIO;
             transform.translation.y =
                 get_centered_pipe_position() * obstacle.pipe_direction + y_offset;
         }
