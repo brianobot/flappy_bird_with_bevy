@@ -92,7 +92,8 @@ pub fn update_bird(
         );
 
         let mut dead = false;
-        if transform.translation.y <= -game_manager.window_dimensions.y / 2. {
+        let (screen_top, screen_bottom) = (game_manager.window_dimensions.y / 2., -game_manager.window_dimensions.y / 2.);
+        if transform.translation.y <= screen_bottom || transform.translation.y >= screen_top {
             dead = true
         } else {
             for (_entity, obstacle_transform) in obstacle_query.iter() {
@@ -107,21 +108,20 @@ pub fn update_bird(
         }
 
         if dead {
-            transform.translation = Vec3::ZERO;
             bird.velocity = 0.;
+            transform.translation = Vec3::ZERO;
 
             for (entity, _obstacle_transform) in obstacle_query.iter_mut() {
-                info!("Entity: {:?}", entity);
                 commands.entity(entity).despawn();
             }
 
-            // let mut rand = rng();
-            // spawn_obstacles(
-            //     &mut commands,
-            //     &mut rand,
-            //     game_manager.window_dimensions.x,
-            //     &game_manager.pipe_image.clone(),
-            // );
+            let mut rand = rng();
+            spawn_obstacles(
+                &mut commands,
+                &mut rand,
+                game_manager.window_dimensions.x,
+                &game_manager.pipe_image.clone(),
+            );
         }
     }
 }
@@ -135,8 +135,6 @@ pub fn spawn_obstacles(
     for i in 0..constants::OBSTACLE_AMOUNT {
         let y_offset = generate_offset(rand);
         let x_pos = window_width / 2.0 * constants::OBSTACLE_SPACING * constants::PIXEL_RATIO * i as f32;
-
-        info!("index: {} [Y Offset: {}, X Pos: {}]", i, y_offset, x_pos);
 
         spawn_obstacle(
             Vec3::X * x_pos + Vec3::Y * (get_centered_pipe_position() + y_offset),
