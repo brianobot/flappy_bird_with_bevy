@@ -118,17 +118,17 @@ pub fn update_bird(
             bird.velocity = 0.;
             transform.translation = Vec3::ZERO;
 
-            for (entity, _obstacle_transform) in obstacle_query.iter_mut() {
-                commands.entity(entity).despawn();
-            }
+            // for (entity, _obstacle_transform) in obstacle_query.iter_mut() {
+            //     commands.entity(entity).despawn();
+            // }
 
-            let mut rand = rng();
-            spawn_obstacles(
-                &mut commands,
-                &mut rand,
-                game_manager.window_dimensions.x,
-                &game_manager.pipe_image.clone(),
-            );
+            // let mut rand = rng();
+            // spawn_obstacles(
+            //     &mut commands,
+            //     &mut rand,
+            //     game_manager.window_dimensions.x,
+            //     &game_manager.pipe_image.clone(),
+            // );
         }
     }
 }
